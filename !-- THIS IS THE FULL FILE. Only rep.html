@@ -1,0 +1,461 @@
+<!-- THIS IS THE FULL FILE. Only replace your code with this for all fixes. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>UNC Study Habit & Performance Tracker (v3 - Subject Tabs)</title>
+  <style>
+    :root{--red:#b30000;--red-dark:#800000;--gray:#f2f2f2;--card:#fff;--muted:#666}
+    *{box-sizing:border-box}
+    body{font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,var(--gray),#fff);margin:0;padding:20px;display:flex;justify-content:center}
+    .app{width:100%;max-width:920px}
+    .card{background:var(--card);border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,0.06);margin-bottom:16px}
+    h1{color:var(--red);margin:0 0 8px 0}
+    label{display:block;font-weight:600;margin:8px 0 6px}
+    input, select{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:14px}
+    .row{display:flex;gap:12px}
+    .col{flex:1}
+    button{background:var(--red);color:#fff;border:none;padding:10px 12px;border-radius:8px;cursor:pointer}
+    button.secondary{background:#777}
+    .result-box{border-radius:10px;padding:12px;margin-top:12px;background:#f5f5f5}
+    .pass{color:#006600;font-weight:700}
+    .fail{color:var(--red);font-weight:700}
+    .subject-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+    .subject-tab{background:#eee;padding:6px 18px;border-radius:18px;cursor:pointer;color:var(--red);font-weight:600;border:2px solid #eee;transition:.1s}
+    .subject-tab.active,.subject-tab:hover{background:var(--red);color:#fff;border:2px solid var(--red)}
+    .history-section{margin-bottom:24px;}
+    .history-section-title{color:var(--red);font-size:16px;font-weight:700;margin:0 0 8px 0;}
+    .history-item{background:#fafafa;border:1px solid #eee;padding:10px;border-radius:8px;margin-bottom:8px}
+    .controls{display:flex;gap:8px}
+    .score-breakdown { font-size:13px;color:#333;margin-top:4px;}
+    .delete-all-btn{font-size:13px;padding:6px 20px;margin-bottom:10px;}
+    @media (max-width:760px){.row{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <div class="app">
+
+    <!-- LOGIN -->
+    <div class="card" id="loginCard">
+      <h1>UNC Login</h1>
+      <p><small>Sign in with your UNC email (examples: <em>@unc.edu.ph</em> or <em>@students.unc.edu.ph</em>). The app stores your session and history locally in your browser.</small></p>
+      <div class="row">
+        <div class="col">
+          <label for="emailInput">UNC Email</label>
+          <input id="emailInput" type="email" placeholder="example@unc.edu.ph" />
+        </div>
+        <div style="width:150px;display:flex;align-items:end;">
+          <button onclick="handleLogin()">Sign in</button>
+        </div>
+      </div>
+      <p id="loginMsg" style="color:var(--red);margin-top:8px;display:none"></p>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="card" id="mainCard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h1>Study Habit & Performance</h1>
+          <div id="welcomeSmall" style="font-size:13px;color:var(--muted)"></div>
+        </div>
+        <div style="text-align:right">
+          <div id="lastLoginSmall" style="font-size:13px;color:var(--muted)"></div>
+          <div class="controls" style="margin-top:8px;justify-content:flex-end">
+            <button class="secondary" onclick="handleLogout()">Logout</button>
+            <button class="secondary" onclick="clearUserHistory()">Clear My History</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORM -->
+      <div style="margin-top:12px">
+        <!-- SUBJECT FIELD -->
+        <div class="row">
+          <div class="col">
+            <label for="subject">Subject</label>
+            <input id="subject" type="text" placeholder="e.g., Mathematics" />
+          </div>
+        </div>
+        <div class="row">
+          <div class="col">
+            <label for="habit">Study Habit</label>
+            <select id="habit">
+              <option>Ordinary Habit</option>
+              <option>Reading Notes</option>
+              <option>Problem Solving</option>
+              <option>Audio Hearing</option>
+              <option>Flip Cards</option>
+            </select>
+          </div>
+          <div style="width:160px">
+            <label for="hours">Study Hours</label>
+            <input id="hours" type="number" min="0" step="0.25" placeholder="e.g., 2" />
+          </div>
+        </div>
+
+        <hr style="margin:12px 0;border:none;border-top:1px solid #eee" />
+
+        <div style="font-weight:700;margin-bottom:6px">Quiz (optional)</div>
+        <div class="row">
+          <div class="col">
+            <label for="quizRaw">Quiz Raw Score</label>
+            <input id="quizRaw" type="number" min="0" placeholder="e.g., 14" />
+          </div>
+          <div style="width:160px">
+            <label for="quizTotal">Quiz Total Items</label>
+            <input id="quizTotal" type="number" min="1" placeholder="e.g., 20" />
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div style="font-weight:700;margin-bottom:6px">Exam (optional)</div>
+        <div class="row">
+          <div class="col">
+            <label for="examRaw">Exam Raw Score</label>
+            <input id="examRaw" type="number" min="0" placeholder="e.g., 42" />
+          </div>
+          <div style="width:160px">
+            <label for="examTotal">Exam Total Items</label>
+            <input id="examTotal" type="number" min="1" placeholder="e.g., 50" />
+          </div>
+        </div>
+
+        <div style="height:10px"></div>
+
+        <div class="row">
+          <div class="col">
+            <label for="passing">Passing Percentage (%)</label>
+            <input id="passing" type="number" min="1" max="100" placeholder="Default: 60" />
+          </div>
+          <div style="width:160px;display:flex;align-items:end">
+            <button onclick="handleSubmit()">Evaluate & Save</button>
+          </div>
+        </div>
+
+        <div id="output"></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="card" id="historyCard" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <h2 style="margin:0;color:var(--red);font-size:18px">My Assessment History</h2>
+        </div>
+        <div>
+          <small id="historyCount" style="color:var(--muted)"></small>
+        </div>
+      </div>
+      <div id="subjectTabs" class="subject-tabs"></div>
+      <button id="deleteSubjectBtn" class="delete-all-btn" style="display:none" onclick="deleteSubjectHistory()">Delete All Records in This Subject</button>
+      <div id="historyList" style="margin-top:8px"></div>
+    </div>
+
+    <p style="text-align:center;color:var(--muted);font-size:13px">Prototype — data stored locally. Use Logout to switch user.</p>
+
+  </div>
+
+  <script>
+    // utilities
+    const UNC_RE = /@(?:[a-z0-9-]+\.)*unc\.edu\.ph$/i;
+    const HISTORY_KEY = 'assessmentHistory_v2';
+    let activeSubject = null; // For subject tab UI
+
+    function $(id){ return document.getElementById(id); }
+    function nowStr(){ return new Date().toLocaleString(); }
+    function round2(v){ return Math.round(v*100)/100; }
+
+    // on load
+    window.addEventListener('load', ()=>{
+      const email = localStorage.getItem('uncEmail');
+      if(email) showMain();
+    });
+
+    // login
+    function handleLogin(){
+      const raw = ($('emailInput').value || '').trim();
+      const email = raw.toLowerCase();
+      const msg = $('loginMsg'); msg.style.display = 'none'; msg.textContent = '';
+      if(!email){ msg.style.display='block'; msg.textContent='Please enter your email.'; return; }
+      if(!UNC_RE.test(email)){
+        msg.style.display='block'; msg.textContent='Please sign in with a valid UNC email (e.g. user@unc.edu.ph).';
+        return;
+      }
+      localStorage.setItem('uncEmail', email);
+      localStorage.setItem('lastLogin', nowStr());
+      showMain();
+    }
+
+    function handleLogout(){
+      localStorage.removeItem('uncEmail');
+      // keep history but reload to show login
+      location.reload();
+    }
+
+    // show app
+    function showMain(){
+      const email = localStorage.getItem('uncEmail');
+      if(!email) return;
+      $('loginCard').style.display = 'none';
+      $('mainCard').style.display = 'block';
+      $('historyCard').style.display = 'block';
+      $('welcomeSmall').textContent = email;
+      $('lastLoginSmall').textContent = 'Signed: ' + (localStorage.getItem('lastLogin') || nowStr());
+      loadHistory();
+    }
+
+    // submit / evaluate
+    function handleSubmit(){
+      const subject = ($('subject').value || '').trim();
+      if (!subject) { alert('Please enter the subject.'); return; }
+      const habit = $('habit').value;
+      const hours = parseFloat($('hours').value) || 0;
+      const quizRawStr = ($('quizRaw').value || '').trim();
+      const quizTotalStr = ($('quizTotal').value || '').trim();
+      const examRawStr = ($('examRaw').value || '').trim();
+      const examTotalStr = ($('examTotal').value || '').trim();
+      const passingStr = ($('passing').value || '').trim();
+
+      const passing = passingStr === '' ? 60 : parseFloat(passingStr);
+      if(isNaN(passing) || passing <= 0 || passing > 100){ alert('Please enter a valid passing percentage (1-100).'); return; }
+
+      const hasQuiz = quizRawStr !== '' || quizTotalStr !== '';
+      const hasExam = examRawStr !== '' || examTotalStr !== '';
+      if(!hasQuiz && !hasExam){ alert('Please enter at least a Quiz OR an Exam (raw score and total items).'); return; }
+
+      // validate pairs
+      let quizPct = null, quizPass = null, quizRaw=null, quizTotal=null;
+      if(hasQuiz){
+        if(quizRawStr === '' || quizTotalStr === ''){ alert('Please fill BOTH Quiz raw score AND Quiz total items.'); return; }
+        quizRaw = parseFloat(quizRawStr); quizTotal = parseFloat(quizTotalStr);
+        if(isNaN(quizRaw) || isNaN(quizTotal) || quizTotal <= 0 || quizRaw < 0 || quizRaw > quizTotal){ alert('Quiz values invalid. Ensure 0 <= raw <= total and total > 0.'); return; }
+        quizPct = round2((quizRaw/quizTotal)*100);
+        quizPass = quizPct >= passing;
+      }
+
+      let examPct = null, examPass = null, examRaw=null, examTotal=null;
+      if(hasExam){
+        if(examRawStr === '' || examTotalStr === ''){ alert('Please fill BOTH Exam raw score AND Exam total items.'); return; }
+        examRaw = parseFloat(examRawStr); examTotal = parseFloat(examTotalStr);
+        if(isNaN(examRaw) || isNaN(examTotal) || examTotal <= 0 || examRaw < 0 || examRaw > examTotal){ alert('Exam values invalid. Ensure 0 <= raw <= total and total > 0.'); return; }
+        examPct = round2((examRaw/examTotal)*100);
+        examPass = examPct >= passing;
+      }
+
+      // decide primary
+      const primary = examPct !== null ? {type:'Exam', pct:examPct, pass:examPass} : {type:'Quiz', pct:quizPct, pass:quizPass};
+
+      // build UI output
+      let outHtml = '';
+      if(quizPct !== null){
+        outHtml += `<div class="result-box">`;
+        outHtml += `<div style="font-weight:700">Quiz Result</div>`;
+        outHtml += `<div>Score: ${quizRaw} / ${quizTotal} → <strong>${quizPct}%</strong></div>`;
+        outHtml += `<div class='${quizPass? 'pass':'fail'}'>${quizPass? 'PASS 🎉' : 'FAIL ❌'}</div>`;
+        outHtml += `<div style="margin-top:8px">${quizPass? compliment(quizPct) : recommend('quiz', quizPct)}</div>`;
+        outHtml += `</div>`;
+      }
+      if(examPct !== null){
+        outHtml += `<div class="result-box">`;
+        outHtml += `<div style="font-weight:700">Exam Result</div>`;
+        outHtml += `<div>Score: ${examRaw} / ${examTotal} → <strong>${examPct}%</strong></div>`;
+        outHtml += `<div class='${examPass? 'pass':'fail'}'>${examPass? 'PASS 🎉' : 'FAIL ❌'}</div>`;
+        outHtml += `<div style="margin-top:8px">${examPass? compliment(examPct) : recommend('exam', examPct)}</div>`;
+        outHtml += `</div>`;
+      }
+
+      outHtml += `<div class="result-box" style="background:#efefef;margin-top:12px">`;
+      outHtml += `<div style="font-weight:700">Overall Recommendation (based on ${primary.type})</div>`;
+      outHtml += `<div style="margin-top:6px">${primary.pass? compliment(primary.pct) : recommend('overall', primary.pct)}</div>`;
+      outHtml += `</div>`;
+
+      $('output').innerHTML = outHtml;
+
+      // save to history
+      const rec = {
+        id: 'id_' + Date.now(),
+        date: nowStr(),
+        email: localStorage.getItem('uncEmail') || '',
+        subject, // subject saved
+        habit, hours,
+        quizRaw, quizTotal, quizPct,
+        examRaw, examTotal, examPct,
+        passing
+      };
+      saveHistory(rec);
+      loadHistory(subject); // Focus on this subject after add
+    }
+
+    function compliment(pct){
+      // More varied compliments depending on pct range
+      if(pct >= 90) {
+        const messages = [
+          'Excellent — outstanding performance! Keep going.',
+          'Superb achievement! Your hard work is paying off.',
+          'You mastered this! Stay curious and keep excelling.',
+          'Phenomenal work! You set a high standard for yourself.',
+          'Amazing! You truly understand the material.'
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+      }
+      if(pct >= 75) {
+        const messages = [
+          'Great work — you are doing well. Keep practicing.',
+          'Impressive! You’re above average. Stay consistent.',
+          'Solid result! Keep up your effective study habits.',
+          'You’re progressing nicely. Keep it up!',
+          'Good momentum! The results show your dedication.'
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+      }
+      if(pct >= 60) {
+        const messages = [
+          'Good job — you passed. Maintain your study routine.',
+          'Well done! Passing is a good step. Aim even higher next time.',
+          'You made it! With a bit more effort, you can go further.',
+          'A pass is a win — keep building on your strengths.',
+          'Steady work! Try to push your score even higher next time.'
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+      }
+      const messages = [
+        'Nice effort — you are close. Keep reviewing and practicing.',
+        'Don’t give up! Review your weak points and try again.',
+        'You’re making progress. Focus on understanding the basics and ask for help if needed.',
+        'Every attempt is a step forward — analyze your mistakes and keep improving.',
+        'Stay motivated! Adjust your study plan and try different techniques.'
+      ];
+      return messages[Math.floor(Math.random() * messages.length)];
+    }
+
+    function recommend(kind, pct){
+      if (kind === 'quiz') {
+        const recs = [
+          'Focus on quick active recall: flashcards, short quizzes, and review incorrect items right after the quiz.',
+          'Try summarizing your notes in your own words and quiz yourself afterward.',
+          'Pair up with a classmate for peer quizzing and discuss tricky questions together.',
+          'Revisit the quiz questions you missed and practice similar problems.',
+          'Allocate time for regular short quizzes to track your understanding.'
+        ];
+        return recs[Math.floor(Math.random() * recs.length)];
+      }
+      if (kind === 'exam') {
+        const recs = [
+          'Use spaced practice, timed mock exams, and concentrate on weak topics; form a study group for problem solving.',
+          'Analyze your mistakes in the exam and revisit those topics. Practice under timed conditions.',
+          'Break study sessions into chunks, and don’t forget to take regular breaks for better retention.',
+          'Simulate exam conditions at home to build confidence and reduce stress.',
+          'Review your notes systematically and test yourself on challenging concepts.'
+        ];
+        return recs[Math.floor(Math.random() * recs.length)];
+      }
+      const recs = [
+        'Review your study plan: increase practice questions, revise notes actively, and schedule shorter regular sessions.',
+        'Consider setting specific goals for each session and tracking your progress.',
+        'Try different study techniques and see which works best for you.',
+        'Organize your materials and set up a distraction-free study area.',
+        'Ask for feedback from your instructor or peers to identify areas for improvement.'
+      ];
+      return recs[Math.floor(Math.random() * recs.length)];
+    }
+
+    // history functions
+    function saveHistory(item){
+      const arr = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      arr.push(item);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(arr));
+    }
+
+    function loadHistory(focusSubject){
+      const all = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      const email = localStorage.getItem('uncEmail');
+      const mine = all.filter(x=> x.email === email);
+      $('historyCount').textContent = mine.length ? mine.length + ' records' : 'No saved records yet.';
+
+      // Group by subject
+      const grouped = {};
+      mine.forEach(it => {
+        const subj = (it.subject || 'No Subject').trim();
+        if (!grouped[subj]) grouped[subj] = [];
+        grouped[subj].push(it);
+      });
+
+      const subjects = Object.keys(grouped).sort();
+      // SUBJECT TABS
+      const tabs = $('subjectTabs');
+      tabs.innerHTML = '';
+      if (subjects.length === 0) {
+        $('historyList').innerHTML = '';
+        $('deleteSubjectBtn').style.display = 'none';
+        activeSubject = null;
+        return;
+      }
+      // set activeSubject if not set or if focusSubject requested
+      if (focusSubject && subjects.includes(focusSubject)) activeSubject = focusSubject;
+      if (!activeSubject || !subjects.includes(activeSubject)) activeSubject = subjects[0];
+
+      subjects.forEach(subj => {
+        const tab = document.createElement('div');
+        tab.className = 'subject-tab' + (subj===activeSubject?' active':'');
+        tab.textContent = subj;
+        tab.onclick = ()=>{ activeSubject=subj; loadHistory(); }
+        tabs.appendChild(tab);
+      });
+      // DELETE ALL BUTTON for subject
+      $('deleteSubjectBtn').style.display = 'inline-block';
+      $('deleteSubjectBtn').textContent = 'Delete All Records in "'+activeSubject+'"';
+
+      // HISTORY LIST for active subject only
+      const out = $('historyList');
+      out.innerHTML = '';
+      grouped[activeSubject].slice().reverse().forEach(it=>{
+        const div = document.createElement('div'); div.className = 'history-item';
+        let html = `<div style="font-size:13px;color:#444"><strong>${it.date}</strong></div>`;
+        html += `<div style="margin-top:6px">Habit: ${it.habit} • Hours: ${it.hours || 0}</div>`;
+        if(it.quizPct !== null && it.quizPct !== undefined)
+          html += `<div class="score-breakdown">Quiz: ${it.quizRaw} / ${it.quizTotal} → ${it.quizPct}%</div>`;
+        if(it.examPct !== null && it.examPct !== undefined)
+          html += `<div class="score-breakdown">Exam: ${it.examRaw} / ${it.examTotal} → ${it.examPct}%</div>`;
+        html += `<div style='margin-top:6px'><small>Passing: ${it.passing}%</small></div>`;
+        html += `<div style='margin-top:8px'><button onclick="deleteRecord('${it.id}')" class='secondary'>Delete Record</button></div>`;
+        div.innerHTML = html;
+        out.appendChild(div);
+      });
+    }
+
+    function deleteRecord(id){
+      if(!confirm('Delete this record?')) return;
+      const all = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      const filtered = all.filter(x=> x.id !== id);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(filtered));
+      // stay on current tab
+      loadHistory(activeSubject);
+    }
+
+    function deleteSubjectHistory(){
+      if(!confirm('Delete ALL records in subject "'+activeSubject+'"?')) return;
+      const all = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      const email = localStorage.getItem('uncEmail');
+      const filtered = all.filter(x=> !(x.email === email && (x.subject||'').trim() === activeSubject));
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(filtered));
+      // after deleting, will auto switch to next subject tab or blank if none left
+      loadHistory();
+      $('output').innerHTML = '';
+    }
+
+    function clearUserHistory(){
+      if(!confirm('Clear ALL your saved assessment history?')) return;
+      const email = localStorage.getItem('uncEmail');
+      const all = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+      const keep = all.filter(x=> x.email !== email);
+      localStorage.setItem(HISTORY_KEY, JSON.stringify(keep));
+      // reset tab and output
+      activeSubject = null;
+      loadHistory();
+      $('output').innerHTML = '';
+    }
+  </script>
+</body>
+</html>
